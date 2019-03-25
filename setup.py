@@ -5,13 +5,18 @@
 from setuptools import find_packages, setup
 
 PROJECT_NAME = 'Flask-arango-orm'
-PROJECT_VERSION = '0.0.0a0.dev0'
-PROJECT_RELEASE = '.'.join(PROJECT_VERSION.split('.')[:2])
+PROJECT_RELEASE = '0.0.0a0.dev0'
+PROJECT_VERSION = '.'.join(PROJECT_RELEASE.split('.')[:2])
 INSTALL_REQUIRES = [
     'arango-orm',
     'Flask', ]
 SETUP_REQUIRES = [
-    'setuptools', ]
+    'setuptools',
+    'pytest-runner',
+    'Sphinx>=1.8.0', ]
+TESTS_REQUIRES = [
+    'pytest>=4.3.0',
+    'mock;python_version<"3.3"', ]
 
 
 def readme():
@@ -20,18 +25,46 @@ def readme():
 
 
 setup(name=PROJECT_NAME,
-      version=PROJECT_VERSION,
-      description='Flask wrapper for arango-orm',
+      version=PROJECT_RELEASE,
+      description='Flask extension for arango-orm',
+      license='LGPL-3.0',
+      license_file='LICENSE.txt',
       long_description=readme(),
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',
-          'Programming Language :: Python :: 3.6', ],
+          'Environment :: Plugins',
+          'Environment :: Web Environment',
+          'Framework :: Flask',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: GNU Lesser General Public License v3 '
+          'or later (LGPLv3+)',
+          'Programming Language :: Python :: 3.6',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 3 :: Only',
+          'Topic :: Database',
+          'Topic :: Internet :: WWW/HTTP :: WSGI',
+          'Topic :: Software Development :: Libraries :: Python Modules', ],
       author="Caitlyn O'Hanna",
-      author_email='caitlyn.ohanna@virtualxistenz.com',
+      author_email='ravenoak@virtualxistenz.com',
       url='https://github.com/QuaererePlatform/Flask-arango-orm',
+      project_urls={
+          'Documentation': 'http://flask-arango-orm.readthedocs.io/',
+          'Source Code': 'https://github.com/QuaererePlatform/Flask-arango'
+                         '-orm',
+      },
       packages=find_packages(exclude=['docs', 'tests']),
       zip_safe=False,
       test_suite='tests',
       python_requires='~=3.6',
       install_requires=INSTALL_REQUIRES,
-      setup_requires=SETUP_REQUIRES, )
+      setup_requires=SETUP_REQUIRES,
+      tests_require=TESTS_REQUIRES,
+      entry_points={
+          'distutils.commands': [
+              'build_sphinx = sphinx.setup_command:BuildDoc']},
+      command_options={
+          'build_sphinx': {
+              'project': ('setup.py', PROJECT_NAME),
+              'version': ('setup.py', PROJECT_VERSION),
+              'release': ('setup.py', PROJECT_RELEASE),
+              'source_dir': ('setup.py', 'docs')}})
