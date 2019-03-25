@@ -5,7 +5,7 @@
 from setuptools import find_packages, setup
 
 PROJECT_NAME = 'Flask-arango-orm'
-PROJECT_RELEASE = '0.0.0'
+PROJECT_RELEASE = '0.1.0'
 PROJECT_VERSION = '.'.join(PROJECT_RELEASE.split('.')[:2])
 INSTALL_REQUIRES = [
     'arango-orm',
