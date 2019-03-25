@@ -42,8 +42,8 @@ Documentation can be generated using:
 Usage
 -----
 
-This extension for the Flask framework uses :py:mod:`arango_orm` to provide an Object Model to use
-within the Flask app.
+This extension for the Flask framework uses arango-orm to provide an Object Model to use
+within the Flask application.
 
 .. code-block:: python
 
