@@ -23,10 +23,10 @@ project = 'Flask-arango-orm'
 copyright = '2019, Caitlyn O\'Hanna'
 author = 'Caitlyn O\'Hanna'
 
-# The short X.Y version
-version = '0.0'
 # The full version, including alpha/beta/rc tags
-release = '0.0.0a0.dev0'
+release = '0.0.0'
+# The short X.Y version
+version = '.'.join(release.split('.')[:2])
 
 # -- General configuration ---------------------------------------------------
 
