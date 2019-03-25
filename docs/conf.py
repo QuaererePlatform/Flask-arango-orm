@@ -14,8 +14,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
 
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
@@ -24,10 +24,9 @@ copyright = '2019, Caitlyn O\'Hanna'
 author = 'Caitlyn O\'Hanna'
 
 # The short X.Y version
-version = ''
+version = '0.0'
 # The full version, including alpha/beta/rc tags
-release = ''
-
+release = '0.0.0a0.dev0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -42,7 +41,12 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
+    'sphinx.ext.intersphinx',
 ]
+
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'flask': ('http://flask.pocoo.org/docs/1.0/', None), }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -71,13 +75,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -105,7 +108,6 @@ html_static_path = ['_static']
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Flask-arango-ormdoc'
-
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -135,7 +137,6 @@ latex_documents = [
      'Caitlyn O\'Hanna', 'manual'),
 ]
 
-
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
@@ -144,7 +145,6 @@ man_pages = [
     (master_doc, 'flask-arango-orm', 'Flask-arango-orm Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -157,7 +157,6 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-
 # -- Options for Epub output -------------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -166,7 +165,7 @@ epub_title = project
 # The unique identifier of the text. This can be a ISBN number
 # or the project homepage.
 #
-# epub_identifier = ''
+epub_identifier = 'https://github.com/QuaererePlatform/Flask-arango-orm'
 
 # A unique identification for the text.
 #
@@ -174,6 +173,5 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
-
 
 # -- Extension configuration -------------------------------------------------

@@ -15,10 +15,10 @@ class ArangoORM():
     def __init__(self, app=None):
         """Constructor
 
-        If a flask app instance is passed as an argument, :any:`init_app`
-        is run as well.
+        If a flask app instance is passed as an argument,
+        :any:`init_app` is run as well.
 
-        :param app:
+        :param app: Flask app instance
         :type app: flask.Flask
         """
         self.app = app
@@ -35,7 +35,7 @@ class ArangoORM():
 
         This should be useful for most development setups
 
-        :param app:
+        :param app: Flask app instance
         :type app: flask.Flask
         :return:
         """
@@ -88,10 +88,13 @@ class ArangoORM():
     def connection(self):
         """Property for storing and retrieving the database connection
 
-        Stores the connection in the top of the app context stack,
-        _app_ctx_stack
+        Stores the database connection in the top of the Flask
+        application context stack, :any:`flask._app_ctx_stack`.  If a
+        connection does not currently exist, :py:func:`connect` is
+        called.
 
-        :return:
+        :returns: ArangoDB connection
+        :rtype: arango_orm.Database
         """
         ctx = _app_ctx_stack.top
         if ctx is not None:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Setup for the columbia micro-service, part of the Quaerere Platform
+"""Setup for Flask-arango-orm
 """
 
 from setuptools import find_packages, setup
@@ -13,7 +13,8 @@ INSTALL_REQUIRES = [
 SETUP_REQUIRES = [
     'setuptools',
     'pytest-runner',
-    'Sphinx>=1.8.0', ]
+    'Sphinx>=1.8.0',
+    'sphinx_rtd_theme', ]
 TESTS_REQUIRES = [
     'pytest>=4.3.0',
     'mock;python_version<"3.3"', ]
@@ -53,7 +54,7 @@ setup(name=PROJECT_NAME,
                          '-orm',
       },
       packages=find_packages(exclude=['docs', 'tests']),
-      zip_safe=False,
+      zip_safe=True,
       test_suite='tests',
       python_requires='~=3.6',
       install_requires=INSTALL_REQUIRES,
