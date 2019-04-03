@@ -2,46 +2,20 @@ version: 2.1
 
 workflows:
   version: 2
+  
   build_and_deploy:
     jobs:
-      - dependencies:
+      - deps-py37:
           filters:
             tags:
               only: /.*/
-      - test:
-          version: "3.2"
+      - test-py37:
           requires:
-            - dependencies:
-                - version: "3.2"
-      - test:
-          version: "3.3"
-          requires:
-            - dependencies:
-                - version: "3.3"
-      - test:
-          version: "3.4"
-          requires:
-            - dependencies:
-                - version: "3.4"
-      - test:
-          version: "3.5"
-          requires:
-            - dependencies:
-                - version: "3.5"
-      - test:
-          version: "3.6"
-          requires:
-            - dependencies:
-                - version: "3.6"
-      - test:
-          version: "3.7"
-          requires:
-            - dependencies:
-                - version: "3.7"
+            - deps-py37
       - pypi:
           requires:
-            - dependencies
-            - test
+            - deps-py37
+            - test-py37
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*/
@@ -50,17 +24,13 @@ workflows:
 
 jobs:
 
-  dependencies:
-    parameters:
-      version:
-        type: string
-        default: "3.7"
+  deps-py37:
     docker:
-      - image: circleci/python:<< parameters.version >>
+      - image: circleci/python:3.7
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-<< parameters.version >>
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
       - run:
           name: install python dependencies
           command: |
@@ -68,21 +38,17 @@ jobs:
             . venv/bin/activate
             pip3 install -r requirements.txt
       - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-<< parameters.version >>
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
           paths:
             - "venv"
 
-  test:
-    parameters:
-      version:
-        type: string
-        default: "3.7"
+  test-py37:
     docker:
-      - image: circleci/python:<< parameters.version >>
+      - image: circleci/python:3.7
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-<< parameters.version >>
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
       - run:
           name: run tests
           command: |
@@ -104,7 +70,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-3.7
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
       - run:
           name: install python dependencies
           command: |
