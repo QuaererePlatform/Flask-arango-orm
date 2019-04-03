@@ -61,6 +61,7 @@ jobs:
       - run:
           name: Smoke Test Install
           command: |
+            . venv/bin/activate
             python --version
             python setup.py install
 
