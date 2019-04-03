@@ -1,0 +1,9 @@
+# Generated file, do not edit
+arango-orm>=0.5.3
+Flask>=1.0.0
+setuptools
+pytest-runner
+Sphinx>=1.8.0
+sphinx_rtd_theme
+pytest>=4.3.0
+mock;python_version<"3.3"

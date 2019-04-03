@@ -1,75 +1,93 @@
 version: 2.1
 
 workflows:
+  version: 2
   build_and_deploy:
     jobs:
-      - build:
+      - dependencies:
           filters:
             tags:
               only: /.*/
-      - test-python-install:
+      - test:
+          version: "3.2"
+          requires:
+            - dependencies:
+                - version: "3.2"
+      - test:
+          version: "3.3"
+          requires:
+            - dependencies:
+                - version: "3.3"
+      - test:
+          version: "3.4"
+          requires:
+            - dependencies:
+                - version: "3.4"
+      - test:
+          version: "3.5"
+          requires:
+            - dependencies:
+                - version: "3.5"
+      - test:
           version: "3.6"
           requires:
-            - build
-      - test-python-install:
+            - dependencies:
+                - version: "3.6"
+      - test:
           version: "3.7"
           requires:
-            - build
-      - deploy:
+            - dependencies:
+                - version: "3.7"
+      - pypi:
           requires:
-            - build
+            - dependencies
+            - test
           filters:
             tags:
-              only: /v[0-9]+(\.[0-9]+)*/
+              only: /^v[0-9]+(\.[0-9]+)*/
             branches:
               ignore: /.*/
 
 jobs:
 
-  build:
-    docker:
-      - image: circleci/python:3.6
-    steps:
-      - checkout
-      - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "setup.py" }}
-      - run:
-          name: install python dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            python setup.py build
-      - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "setup.py" }}
-          paths:
-            - "venv"
-
-  test-python-install:
+  dependencies:
     parameters:
       version:
         type: string
-        default: latest
+        default: "3.7"
     docker:
       - image: circleci/python:<< parameters.version >>
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "setup.py" }}
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-<< parameters.version >>
       - run:
           name: install python dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            python setup.py build
+            pip3 install -r requirements.txt
       - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "setup.py" }}
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-<< parameters.version >>
           paths:
             - "venv"
+
+  test:
+    parameters:
+      version:
+        type: string
+        default: "3.7"
+    docker:
+      - image: circleci/python:<< parameters.version >>
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-<< parameters.version >>
       - run:
           name: run tests
           command: |
             . venv/bin/activate
-            python setup.py test --junitxml=test-reports/junit.xml
+            python setup.py test
       - store_test_results:
           path: test-reports
       - store_artifacts:
@@ -80,23 +98,19 @@ jobs:
             python --version
             python setup.py install
 
-  deploy:
+  pypi:
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.7
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "setup.py" }}
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-3.7
       - run:
           name: install python dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            # make dev
-      - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "setup.py" }}
-          paths:
-            - "venv"
+            python setup.py build
       - run:
           name: verify git tag vs. version
           command: |
@@ -112,7 +126,8 @@ jobs:
       - run:
           name: create packages
           command: |
-            make package
+            python setup.py sdist
+            python setup.py bdist_wheel
       - run:
           name: upload to pypi
           command: |
