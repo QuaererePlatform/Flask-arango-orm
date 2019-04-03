@@ -21,6 +21,8 @@ SETUP_REQUIRES = [
     'sphinx_rtd_theme', ]
 TESTS_REQUIRES = [
     'pytest>=4.3.0',
+    'pytest-cov',
+    'pytest-flake8',
     'mock;python_version<"3.3"', ]
 
 
