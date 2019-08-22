@@ -9,7 +9,7 @@ from setuptools import find_packages, setup
 from setuptools.command.install import install
 
 PROJECT_NAME = 'Flask-arango-orm'
-PROJECT_RELEASE = '0.1.0'
+PROJECT_RELEASE = '0.1.1.dev0'
 PROJECT_VERSION = '.'.join(PROJECT_RELEASE.split('.')[:2])
 INSTALL_REQUIRES = [
     'arango-orm>=0.5.3',
@@ -18,7 +18,7 @@ INSTALL_REQUIRES = [
 SETUP_REQUIRES = [
     'setuptools',
     'pytest-runner',
-    'Sphinx>=1.8.0',
+    'Sphinx<2,>=1.8.0',
     'sphinx_rtd_theme', ]
 TESTS_REQUIRES = [
     'pytest>=4.3.0',
