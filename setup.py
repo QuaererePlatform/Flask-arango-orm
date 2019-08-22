@@ -13,6 +13,7 @@ PROJECT_RELEASE = '0.1.0'
 PROJECT_VERSION = '.'.join(PROJECT_RELEASE.split('.')[:2])
 INSTALL_REQUIRES = [
     'arango-orm>=0.5.3',
+    'python-arango<5,>4',
     'Flask>=1.0.0', ]
 SETUP_REQUIRES = [
     'setuptools',
