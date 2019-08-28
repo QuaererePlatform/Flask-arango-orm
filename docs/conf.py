@@ -14,17 +14,20 @@
 #
 import os
 import sys
-
 sys.path.insert(0, os.path.abspath('..'))
+
+def get_version():
+    with open('../VERSION') as f:
+        return f.readline().strip()
 
 # -- Project information -----------------------------------------------------
 
 project = 'Flask-arango-orm'
-copyright = '2019, Caitlyn O\'Hanna'
-author = 'Caitlyn O\'Hanna'
+copyright = "2019, Caitlyn O'Hanna"
+author = "Caitlyn O'Hanna"
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = get_version()
 # The short X.Y version
 version = '.'.join(release.split('.')[:2])
 
