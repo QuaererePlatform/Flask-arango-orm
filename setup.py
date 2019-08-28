@@ -5,12 +5,10 @@
 import os
 import sys
 
-from setuptools import find_packages, setup
+from setuptools import setup
 from setuptools.command.install import install
 
 PROJECT_NAME = 'Flask-arango-orm'
-PROJECT_RELEASE = '0.1.1.dev0'
-PROJECT_VERSION = '.'.join(PROJECT_RELEASE.split('.')[:2])
 INSTALL_REQUIRES = [
     'arango-orm>=0.5.3',
     'python-arango<5,>4',
@@ -26,10 +24,13 @@ TESTS_REQUIRES = [
     'pytest-flake8',
     'mock;python_version<"3.3"', ]
 
+def get_version():
+    with open('VERSION') as f:
+        return f.readline().strip()
 
-def readme():
-    with open('README.rst') as fh:
-        return fh.read()
+
+PROJECT_RELEASE = get_version()
+PROJECT_VERSION = '.'.join(PROJECT_RELEASE.split('.')[:2])
 
 
 # Taken from https://circleci.com/blog/continuously-deploying-python-\
@@ -63,13 +64,7 @@ class WriteRequirementsCommand(install):
 
 setup(name=PROJECT_NAME,
       version=PROJECT_RELEASE,
-      description='Flask extension for arango-orm',
-      license='LGPL-3.0',
-      long_description=readme(),
-      packages=find_packages(exclude=['docs', 'tests']),
-      zip_safe=True,
       test_suite='tests',
-      python_requires='~=3.6',
       install_requires=INSTALL_REQUIRES,
       setup_requires=SETUP_REQUIRES,
       tests_require=TESTS_REQUIRES,
