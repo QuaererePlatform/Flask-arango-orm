@@ -1,59 +1,118 @@
 version: 2.1
 
-workflows:
-  version: 2
+commands:
 
-  build_and_deploy:
-    jobs:
-      - deps-py37:
-          filters:
-            tags:
-              only: /.*/
-      - test-py37:
-          requires:
-            - deps-py37
-      - pypi:
-          requires:
-            - deps-py37
-            - test-py37
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
+  bumpversion:
+    description: "Uses bump2version to increase version number"
+    parameters:
+      version_part:
+        type: enum
+        enum: ['major', 'minor', 'patch', 'pre_release', 'pre_release_num']
+      bump_options:
+        type: string
+        default: '--no-tag --commit -m "Bump version: {current_version} → {new_version} [ci skip]"'
+    steps:
+      - restore_cache:
+          key: v1-bumpversion
+      - run:
+          name: Install/Upgrade bumpversion
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip3 install -U bump2version
+      - save_cache:
+          key: v1-bumpversion
+          paths:
+            - "venv"
+      - run:
+          name: Bumpversion
+          command: |
+            git config --global user.email "git-robot@virtualxistenz.com"
+            git config --global user.name "Git Robot"
+            . venv/bin/activate
+            python3 setup.py --version
+            bumpversion << parameters.bump_options >> << parameters.version_part >>
+            python3 setup.py --version
+            git log -n 1
+      - run:
+          name: Push version bump
+          command: |
+            git push -u origin $CIRCLE_BRANCH
+
+
+  publish:
+    description: "Uses twine to publish packages to PyPI"
+    parameters:
+      verify_tag:
+        type: boolean
+        default: false
+    steps:
+      - restore_cache:
+          keys:
+            - v1-release-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
+      - run:
+          name: Install/Upgrade release requirements
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip3 install -U -r requirements.txt
+            pip3 install -U wheel
+            pip3 install -U twine
+      - save_cache:
+          key: v1-release-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          paths:
+            - "venv"
+      - when:
+          condition: << parameters.verify_tag >>
+          steps:
+            - run:
+                name: Verify git tag vs. package version
+                command: |
+                  . venv/bin/activate
+                  python setup.py verify
+      - run:
+          name: Publish to PyPI
+          command: |
+            . venv/bin/activate
+            python3 setup.py sdist
+            python3 setup.py bdist_wheel
+            twine upload dist/*
 
 jobs:
 
-  deps-py37:
+  install_deps_py37:
     docker:
       - image: circleci/python:3.7
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}
       - run:
-          name: install python dependencies
+          name: Install package dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip3 install -r requirements.txt
+            pip3 install -U -r requirements.txt
       - save_cache:
           key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
           paths:
             - "venv"
 
-  test-py37:
+  unittest_py37:
     docker:
       - image: circleci/python:3.7
+    environment:
+      PYTEST_ADDOPTS: --cov-report=xml:test-reports/coverage.xml --junitxml=test-reports/junit.xml
     steps:
       - checkout
       - restore_cache:
           key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
       - run:
-          name: run tests
+          name: Run tests
           command: |
             . venv/bin/activate
-            python setup.py test
+            python3 setup.py test
       - store_test_results:
           path: test-reports
       - store_artifacts:
@@ -62,41 +121,72 @@ jobs:
           name: Smoke Test Install
           command: |
             . venv/bin/activate
-            python --version
-            python setup.py install
+            python3 --version
+            python3 setup.py install
 
-  pypi:
+  bump_publish_dev:
+    docker:
+      - image: circleci/python:3.7
+    environment:
+      TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+    steps:
+      - checkout
+      - publish
+      - bumpversion:
+          version_part: pre_release_num
+
+  bump_publish_release:
     docker:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
-      - run:
-          name: install python dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            python setup.py build
-      - run:
-          name: verify git tag vs. version
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            python setup.py verify
-      - run:
-          name: init .pypirc
-          command: |
-            echo -e "[pypi]" >> ~/.pypirc
-            echo -e "username = ravenoak" >> ~/.pypirc
-            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
-      - run:
-          name: create packages
-          command: |
-            python setup.py sdist
-            python setup.py bdist_wheel
-      - run:
-          name: upload to pypi
-          command: |
-            . venv/bin/activate
-            twine upload dist/*
+      - publish
+      - bumpversion:
+          version_part: pre_release_num
+
+  publish_prod_tag:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - publish:
+          verify_tag: true
+
+workflows:
+  version: 2
+
+  build_test_publish_py37:
+    jobs:
+      - install_deps_py37:
+          filters:
+            tags:
+              only: /.*/
+      - unittest_py37:
+          requires:
+            - install_deps_py37
+          filters:
+            tags:
+              only: /.*/
+      - bump_publish_dev:
+          context: Test PyPI
+          requires:
+            - unittest_py37
+          filters:
+            branches:
+              only: develop
+      - bump_publish_release:
+          context: Prod PyPI
+          requires:
+            - unittest_py37
+          filters:
+            branches:
+              only: /^release\/.*/
+      - publish_prod_tag:
+          context: Prod PyPI
+          requires:
+            - unittest_py37
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)+$/
+            branches:
+              ignore: /.*/
