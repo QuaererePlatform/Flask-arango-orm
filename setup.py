@@ -10,9 +10,9 @@ from setuptools.command.install import install
 
 PROJECT_NAME = 'Flask-arango-orm'
 INSTALL_REQUIRES = [
-    'arango-orm>=0.5.3',
-    'python-arango<5,>4',
-    'Flask>=1.0.0', ]
+    'arango-orm>=0.7.2',
+    'python-arango>=7',
+    'Flask>=2.0.0', ]
 SETUP_REQUIRES = [
     'setuptools',
     'pytest-runner',
@@ -21,7 +21,7 @@ SETUP_REQUIRES = [
 TESTS_REQUIRES = [
     'pytest>=4.3.0',
     'pytest-cov',
-    'pytest-flake8',
+    'pytest-flake8<=4',
     'mock;python_version<"3.3"', ]
 
 def get_version():
