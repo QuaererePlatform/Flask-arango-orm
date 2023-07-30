@@ -16,7 +16,7 @@ INSTALL_REQUIRES = [
 SETUP_REQUIRES = [
     'setuptools',
     'pytest-runner',
-    'Sphinx>2',
+    'Sphinx<7',
     'sphinx_rtd_theme', ]
 TESTS_REQUIRES = [
     'pytest>=4.3.0',
