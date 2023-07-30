@@ -21,8 +21,8 @@ SETUP_REQUIRES = [
 TESTS_REQUIRES = [
     'pytest>=4.3.0',
     'pytest-cov',
-    'pytest-flake8<=4',
-    'mock;python_version<"3.3"', ]
+    'pytest-flake8>=4',
+    'mock;python_version>"3.3"', ]
 
 def get_version():
     with open('VERSION') as f:
