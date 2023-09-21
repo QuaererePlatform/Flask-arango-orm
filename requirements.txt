@@ -9,4 +9,4 @@ sphinx_rtd_theme
 pytest>=4.3.0
 pytest-cov
 pytest-flake8
-mock;python_version<"3.3"
+mock;python_version>"3.3"
