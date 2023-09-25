@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "flask-arango-orm"
+version = "0.1.2"
+description = "Flask connector for ArangoDB using arango-orm"
+documentation = "http://flask-arango-orm.readthedocs.io/"
+repository = "https://github.com/QuaererePlatform/Flask-arango-orm"
+homepage = "https://github.com/QuaererePlatform/Flask-arango-orm"
+license = "LGPL-3.0-or-later"
+authors = ["ravenoak <ravenoak@virtualxistenz.com>"]
+readme = "README.rst"
+packages = [{include = "flask_arango_orm"}]
+include = ["LICENSE.txt", "README.rst"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+	"Environment :: Plugins",
+	"Environment :: Web Environment",
+	"Framework :: Flask",
+	"Intended Audience :: Developers",
+	"License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+	"Operating System :: OS Independent",
+	"Programming Language :: Python :: 3 :: Only",
+	"Topic :: Database",
+	"Topic :: Internet :: WWW/HTTP :: WSGI",
+	"Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+arango-orm = ">=0.7.2"
+python-arango = ">=7"
+flask = ">=2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=4.3.0"
+pytest-cov = "^4.1.0"
+pytest-flake8 = "^1.1.1"
+mock = "^5.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
