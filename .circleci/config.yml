@@ -50,7 +50,7 @@ commands:
       - restore_cache:
           keys:
             - v1-release-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
+            - v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py38
       - run:
           name: Install/Upgrade release requirements
           command: |
@@ -81,9 +81,9 @@ commands:
 
 jobs:
 
-  install_deps_py37:
+  install_deps_py38:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.8
     steps:
       - checkout
       - restore_cache:
@@ -95,19 +95,19 @@ jobs:
             . venv/bin/activate
             pip3 install -U -r requirements.txt
       - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py38
           paths:
             - "venv"
 
-  unittest_py37:
+  unittest_py38:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.8
     environment:
       PYTEST_ADDOPTS: --cov-report=xml:test-reports/coverage.xml --junitxml=test-reports/junit.xml
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py37
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "requirements.txt" }}-py38
       - run:
           name: Run tests
           command: |
@@ -126,7 +126,7 @@ jobs:
 
   bump_publish_dev:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.8
     environment:
       TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
     steps:
@@ -137,7 +137,7 @@ jobs:
 
   bump_publish_release:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.8
     steps:
       - checkout
       - publish
@@ -146,7 +146,7 @@ jobs:
 
   publish_prod_tag:
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.8
     steps:
       - checkout
       - publish:
@@ -155,36 +155,36 @@ jobs:
 workflows:
   version: 2
 
-  build_test_publish_py37:
+  build_test_publish_py38:
     jobs:
-      - install_deps_py37:
+      - install_deps_py38:
           filters:
             tags:
               only: /.*/
-      - unittest_py37:
+      - unittest_py38:
           requires:
-            - install_deps_py37
+            - install_deps_py38
           filters:
             tags:
               only: /.*/
       - bump_publish_dev:
           context: Test PyPI
           requires:
-            - unittest_py37
+            - unittest_py38
           filters:
             branches:
               only: develop
       - bump_publish_release:
           context: Prod PyPI
           requires:
-            - unittest_py37
+            - unittest_py38
           filters:
             branches:
               only: /^release\/.*/
       - publish_prod_tag:
           context: Prod PyPI
           requires:
-            - unittest_py37
+            - unittest_py38
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)+$/
