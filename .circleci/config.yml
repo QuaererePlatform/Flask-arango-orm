@@ -1,22 +1,9 @@
 version: 2.1
+
+orbs:
+  python: circleci/python@2.1.1
+
 jobs:
-
-  install_deps_py38:
-    docker:
-      - image: cimg/python:3.8
-    steps:
-      - checkout
-      - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
-      - run:
-          name: Install package dependencies
-          command: |
-            poetry install -n
-      - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
-          paths:
-            - "~/.cache/pypoetry"
-
   unittest_py38:
     docker:
       - image: cimg/python:3.8
@@ -26,10 +13,16 @@ jobs:
       - checkout
       - restore_cache:
           key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
+      - python/install-packages:
+          pkg-manager: poetry
       - run:
           name: Run tests
           command: |
-            poetry run pytest
+            poetry run pytest -vv --cov=src tests/
+      - save_cache:
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
+          paths:
+            - "~/.cache/pypoetry"
       - store_test_results:
           path: test-reports
       - store_artifacts:
@@ -37,10 +30,6 @@ jobs:
 
 workflows:
   version: 2
-
   build_test_publish_py38:
     jobs:
-      - install_deps_py38
-      - unittest_py38:
-          requires:
-            - install_deps_py38
+      - unittest_py38
