@@ -11,7 +11,7 @@ jobs:
       - run:
           name: Install package dependencies
           command: |
-            poetry install
+            poetry install -n
       - save_cache:
           key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
           paths:
