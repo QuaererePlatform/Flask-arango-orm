@@ -3,7 +3,7 @@ __all__ = ['ArangoORM']
 
 from arango import ArangoClient
 from arango_orm import ConnectionPool, Database
-from flask import current_app, _app_ctx_stack
+from flask import current_app, Flask
 
 ARANGODB_CLUSTER = False
 ARANGODB_HOST = ('http', '127.0.0.1', 8529)
@@ -21,7 +21,7 @@ class ArangoORM():
         :param app: Flask app instance
         :type app: flask.Flask
         """
-        self.app = app
+        #self.app = app
         if app is not None:
             self.init_app(app)
 
@@ -60,29 +60,40 @@ class ArangoORM():
         :returns: Connection to arangodb
         :rtype: arango_orm.Database
         """
-        db_name = current_app.config['ARANGODB_DATABASE']
-        username = current_app.config['ARANGODB_USER']
-        password = current_app.config['ARANGODB_PASSWORD']
+        with current_app.app_context():
+            db_name = current_app.config['ARANGODB_DATABASE']
+            username = current_app.config['ARANGODB_USER']
+            password = current_app.config['ARANGODB_PASSWORD']
 
-        if current_app.config['ARANGODB_CLUSTER'] == True:
-            hosts = []
-            host_pool = current_app.config['ARANGODB_HOST_POOL']
-            for protocol, host, port in host_pool:
-                hosts.append(ArangoClient(protocol=protocol,
-                                          host=host,
-                                          port=port))
-            return ConnectionPool(hosts,
-                                  dbname=db_name,
-                                  password=password,
-                                  username=username)
-        else:
-            protocol, host, port = current_app.config['ARANGODB_HOST']
-            client = ArangoClient(protocol=protocol,
-                                  host=host,
-                                  port=port)
-            return Database(client.db(name=db_name,
-                                      username=username,
-                                      password=password))
+            if current_app.config['ARANGODB_CLUSTER'] == True:
+                hosts = []
+                host_pool = current_app.config['ARANGODB_HOST_POOL']
+                for protocol, host, port in host_pool:
+                    hosts.append(
+                        ArangoClient(
+                            hosts="{protocol}://{host}:{port}".format(
+                                protocol = protocol,
+                                host = host,
+                                port = port
+                            )
+                        )
+                    )
+                return ConnectionPool(hosts,
+                                      dbname=db_name,
+                                      password=password,
+                                      username=username)
+            else:
+                protocol, host, port = current_app.config['ARANGODB_HOST']
+                client = ArangoClient(
+                            hosts="{protocol}://{host}:{port}".format(
+                                protocol = protocol,
+                                host = host,
+                                port = port
+                            )
+                        )
+                return Database(client.db(name=db_name,
+                                          username=username,
+                                          password=password))
 
     @property
     def connection(self):
@@ -96,9 +107,9 @@ class ArangoORM():
         :returns: ArangoDB connection
         :rtype: arango_orm.Database
         """
-        ctx = _app_ctx_stack.top
-        if ctx is not None:
-            if not hasattr(ctx, 'arangodb'):
-                setattr(ctx, 'arangodb', self.connect())
+        with current_app.app_context():
+            if not hasattr(current_app, 'arangodb'):
+                setattr(current_app, 'arangodb', self.connect())
                 # ctx.arangodb = self.connect()
-            return ctx.arangodb
+            return current_app.arangodb
+
