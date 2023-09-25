@@ -13,12 +13,12 @@ jobs:
       - checkout
       - restore_cache:
           key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
+      - python/install-packages:
+          pkg-manager: poetry
       - run:
           name: Fix arango-orm dependencies
           command: |
-            pip install six
-      - python/install-packages:
-          pkg-manager: poetry
+            poetry run pip install six
       - run:
           name: Run tests
           command: |
