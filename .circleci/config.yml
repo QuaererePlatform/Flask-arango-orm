@@ -15,7 +15,7 @@ jobs:
       - save_cache:
           key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
           paths:
-            - "venv"
+            - "~/.cache/pypoetry"
 
   unittest_py38:
     docker:
