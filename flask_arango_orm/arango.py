@@ -9,7 +9,7 @@ ARANGODB_CLUSTER = False
 ARANGODB_HOST = ('http', '127.0.0.1', 8529)
 
 
-class ArangoORM():
+class ArangoORM:
     """Flask extension for integrating the arango_orm package"""
 
     def __init__(self, app=None):
@@ -21,11 +21,12 @@ class ArangoORM():
         :param app: Flask app instance
         :type app: flask.Flask
         """
-        #self.app = app
+        self.app = app
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app):
+    @staticmethod
+    def init_app(app):
         """Initializes ArangoORM for use with the passed app instance
 
         Sets up the following defaults:
@@ -65,16 +66,16 @@ class ArangoORM():
             username = current_app.config['ARANGODB_USER']
             password = current_app.config['ARANGODB_PASSWORD']
 
-            if current_app.config['ARANGODB_CLUSTER'] == True:
+            if current_app.config['ARANGODB_CLUSTER']:
                 hosts = []
                 host_pool = current_app.config['ARANGODB_HOST_POOL']
                 for protocol, host, port in host_pool:
                     hosts.append(
                         ArangoClient(
                             hosts="{protocol}://{host}:{port}".format(
-                                protocol = protocol,
-                                host = host,
-                                port = port
+                                protocol=protocol,
+                                host=host,
+                                port=port
                             )
                         )
                     )
@@ -85,12 +86,12 @@ class ArangoORM():
             else:
                 protocol, host, port = current_app.config['ARANGODB_HOST']
                 client = ArangoClient(
-                            hosts="{protocol}://{host}:{port}".format(
-                                protocol = protocol,
-                                host = host,
-                                port = port
-                            )
-                        )
+                    hosts="{protocol}://{host}:{port}".format(
+                        protocol=protocol,
+                        host=host,
+                        port=port
+                    )
+                )
                 return Database(client.db(name=db_name,
                                           username=username,
                                           password=password))
@@ -104,7 +105,7 @@ class ArangoORM():
         connection does not currently exist, :py:func:`connect` is
         called.
 
-        :returns: ArangoDB connection
+        :returns: ArangoDB.connection
         :rtype: arango_orm.Database
         """
         with current_app.app_context():
@@ -112,4 +113,3 @@ class ArangoORM():
                 setattr(current_app, 'arangodb', self.connect())
                 # ctx.arangodb = self.connect()
             return current_app.arangodb
-
