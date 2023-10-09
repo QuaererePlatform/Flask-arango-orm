@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flask-arango-orm"
-version = "0.1.2"
+version = "0.2.0"
 description = "Flask connector for ArangoDB using arango-orm"
 documentation = "http://flask-arango-orm.readthedocs.io/"
 repository = "https://github.com/QuaererePlatform/Flask-arango-orm"

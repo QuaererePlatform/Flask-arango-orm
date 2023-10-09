@@ -12,7 +12,7 @@ ARANGODB_HOST = ('http', '127.0.0.1', 8529)
 class ArangoORM:
     """Flask extension for integrating the arango_orm package"""
 
-    def __init__(self, app=None):
+    def __init__(self, app: Flask = None):
         """Constructor
 
         If a flask app instance is passed as an argument,
@@ -25,8 +25,7 @@ class ArangoORM:
         if app is not None:
             self.init_app(app)
 
-    @staticmethod
-    def init_app(app):
+    def init_app(self, app: Flask):
         """Initializes ArangoORM for use with the passed app instance
 
         Sets up the following defaults:
@@ -40,8 +39,10 @@ class ArangoORM:
         :type app: flask.Flask
         :return:
         """
-        app.config.setdefault('ARANGODB_CLUSTER', ARANGODB_CLUSTER)
-        app.config.setdefault('ARANGODB_HOST', ARANGODB_HOST)
+        if self.app is None:
+            self.app = app
+        self.app.config.setdefault('ARANGODB_CLUSTER', ARANGODB_CLUSTER)
+        self.app.config.setdefault('ARANGODB_HOST', ARANGODB_HOST)
 
     def connect(self):
         """Sets up the connection to the arangodb database
@@ -111,5 +112,4 @@ class ArangoORM:
         with current_app.app_context():
             if not hasattr(current_app, 'arangodb'):
                 setattr(current_app, 'arangodb', self.connect())
-                # ctx.arangodb = self.connect()
             return current_app.arangodb

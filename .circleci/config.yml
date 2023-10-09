@@ -22,7 +22,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            poetry run pytest -vv --cov=src tests/
+            poetry run pytest -vv --cov=flask_arango_orm tests/
       - save_cache:
           key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
           paths:
