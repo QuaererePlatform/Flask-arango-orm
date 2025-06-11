@@ -39,3 +39,24 @@ class TestAsyncArangoORM:
         assert app.extensions["arango_async"] == (mock_client, test_conn)
         await arango.teardown()
         mock_connect.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    @mock.patch.object(AsyncArangoORM, "connect", new_callable=mock.AsyncMock)
+    async def test_connection_repeated_use(self, mock_connect):
+        mock_client = mock.AsyncMock()
+        mock_db = object()
+        mock_connect.return_value = (mock_client, mock_db)
+
+        app = flask.Flask(__name__)
+        arango = AsyncArangoORM(app)
+        ctx = app.app_context()
+        ctx.push()
+        app.do_teardown_appcontext = lambda exc=None: None
+
+        first = await arango.connection()
+        second = await arango.connection()
+
+        assert first is second
+        assert app.extensions["arango_async"] == (mock_client, mock_db)
+        mock_connect.assert_awaited_once()
+        await arango.teardown()
