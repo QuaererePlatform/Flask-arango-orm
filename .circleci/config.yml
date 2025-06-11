@@ -4,15 +4,15 @@ orbs:
   python: circleci/python@2.1.1
 
 jobs:
-  unittest_py38:
+  unittest_py311:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.11
     environment:
       PYTEST_ADDOPTS: --cov-report=xml:test-reports/coverage.xml --junitxml=test-reports/junit.xml
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py311
       - python/install-packages:
           pkg-manager: poetry
       - run:
@@ -24,7 +24,7 @@ jobs:
           command: |
             poetry run pytest -vv --cov=flask_arango_orm tests/
       - save_cache:
-          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py38
+          key: v1-dependency-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}-py311
           paths:
             - "~/.cache/pypoetry"
       - store_test_results:
@@ -34,6 +34,6 @@ jobs:
 
 workflows:
   version: 2
-  build_test_publish_py38:
+  build_test_publish_py311:
     jobs:
-      - unittest_py38
+      - unittest_py311
