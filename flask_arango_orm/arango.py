@@ -1,14 +1,16 @@
 """Main module for flask_arango_orm"""
-__all__ = ['ArangoORM']
+
+__all__ = ["ArangoORM", "AsyncArangoORM"]
 
 from arango import ArangoClient
 from arango_orm.connection_pool import ConnectionPool
 from flask import current_app, Flask
+from aioarango import ArangoClient as AsyncArangoClient
 
 from .config import ArangoSettings
 
 ARANGODB_CLUSTER = False
-ARANGODB_HOST = ('http', '127.0.0.1', 8529)
+ARANGODB_HOST = ("http", "127.0.0.1", 8529)
 
 
 class ArangoORM:
@@ -44,11 +46,11 @@ class ArangoORM:
         """
         if self.app is None:
             self.app = app
-        self.app.config.setdefault('ARANGODB_CLUSTER', ARANGODB_CLUSTER)
-        self.app.config.setdefault('ARANGODB_HOST', ARANGODB_HOST)
-        if not hasattr(self.app, 'extensions'):
+        self.app.config.setdefault("ARANGODB_CLUSTER", ARANGODB_CLUSTER)
+        self.app.config.setdefault("ARANGODB_HOST", ARANGODB_HOST)
+        if not hasattr(self.app, "extensions"):
             self.app.extensions = {}
-        self.app.extensions.setdefault('arango', None)
+        self.app.extensions.setdefault("arango", None)
         self.app.teardown_appcontext(self.teardown)
 
         self.settings = ArangoSettings.from_mapping(self.app.config)
@@ -114,11 +116,63 @@ class ArangoORM:
         :returns: Database instance
         :rtype: arango_orm.database.Database
         """
-        if current_app.extensions.get('arango') is None:
-            current_app.extensions['arango'] = self.connect()
-        return current_app.extensions['arango']
+        if current_app.extensions.get("arango") is None:
+            current_app.extensions["arango"] = self.connect()
+        return current_app.extensions["arango"]
 
     def teardown(self, exception=None):
-        conn = current_app.extensions.pop('arango', None)
-        if conn is not None and hasattr(conn, 'close'):
+        conn = current_app.extensions.pop("arango", None)
+        if conn is not None and hasattr(conn, "close"):
             conn.close()
+
+
+class AsyncArangoORM:
+    """Asynchronous version of :class:`ArangoORM` using ``aioarango``."""
+
+    def __init__(self, app: Flask | None = None) -> None:
+        self.app = app
+        self.settings: ArangoSettings | None = None
+        if app is not None:
+            self.init_app(app)
+
+    def init_app(self, app: Flask) -> None:
+        if self.app is None:
+            self.app = app
+        self.app.config.setdefault("ARANGODB_CLUSTER", ARANGODB_CLUSTER)
+        self.app.config.setdefault("ARANGODB_HOST", ARANGODB_HOST)
+        if not hasattr(self.app, "extensions"):
+            self.app.extensions = {}
+        self.app.extensions.setdefault("arango_async", None)
+        self.app.teardown_appcontext(self.teardown)
+
+        self.settings = ArangoSettings.from_mapping(self.app.config)
+
+    async def connect(self):
+        settings = self.settings or ArangoSettings.from_mapping(current_app.config)
+
+        db_name = settings.database
+        username = settings.user
+        password = settings.password
+
+        if settings.cluster:
+            host_pool = settings.host_pool
+        else:
+            host_pool = [settings.host]
+
+        hosts = [f"{proto}://{host}:{port}" for proto, host, port in host_pool]
+
+        client = AsyncArangoClient(hosts=hosts)
+        db = await client.db(db_name, username, password)
+        return client, db
+
+    async def connection(self):
+        if current_app.extensions.get("arango_async") is None:
+            current_app.extensions["arango_async"] = await self.connect()
+        _, db = current_app.extensions["arango_async"]
+        return db
+
+    async def teardown(self, exception: Exception | None = None) -> None:
+        conn = current_app.extensions.pop("arango_async", None)
+        if conn is not None:
+            client, _ = conn
+            await client.close()
