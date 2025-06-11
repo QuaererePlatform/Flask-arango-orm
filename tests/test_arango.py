@@ -23,7 +23,13 @@ class TestArangoORM:
 
     @mock.patch.object(ArangoORM, 'connect')
     def test_connection_attribute(self, mock_connect):
-        test_conn = 'Test DB connection'
+        class DummyConn:
+            def __init__(self):
+                self.closed = False
+            def close(self):
+                self.closed = True
+
+        test_conn = DummyConn()
         mock_connect.return_value = test_conn
 
         import flask
@@ -31,4 +37,6 @@ class TestArangoORM:
         arango = ArangoORM(app)
         with app.test_request_context():
             db_conn = arango.connection
-            assert db_conn == test_conn
+            assert db_conn is test_conn
+            assert app.extensions['arango'] is test_conn
+        assert test_conn.closed
