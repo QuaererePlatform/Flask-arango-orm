@@ -91,3 +91,29 @@ async def test_missing_config_raises(app):
     with pytest.raises(ValueError) as exc:
         await arango.connect()
     assert "ARANGODB_DATABASE" in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_invalid_host_definition(app):
+    app.config["ARANGODB_HOST"] = ("http", "localhost")
+    arango = AsyncArangoORM(app)
+    ctx = app.app_context()
+    ctx.push()
+    app.do_teardown_appcontext = lambda exc=None: None
+    with pytest.raises(ValueError):
+        await arango.connect()
+
+
+@pytest.mark.asyncio
+async def test_invalid_host_pool_definition(app):
+    app.config["ARANGODB_CLUSTER"] = True
+    app.config["ARANGODB_HOST_POOL"] = [
+        ("http", "host1", 8529),
+        ("http", "host2"),
+    ]
+    arango = AsyncArangoORM(app)
+    ctx = app.app_context()
+    ctx.push()
+    app.do_teardown_appcontext = lambda exc=None: None
+    with pytest.raises(ValueError):
+        await arango.connect()
