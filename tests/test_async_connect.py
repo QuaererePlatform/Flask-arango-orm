@@ -79,3 +79,15 @@ async def test_teardown_closes_connection(app):
     await arango.teardown()
     assert flask.current_app.extensions.get("arango_async") is None
     dummy_client.close.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_missing_config_raises(app):
+    app.config.pop("ARANGODB_DATABASE")
+    arango = AsyncArangoORM(app)
+    ctx = app.app_context()
+    ctx.push()
+    app.do_teardown_appcontext = lambda exc=None: None
+    with pytest.raises(ValueError) as exc:
+        await arango.connect()
+    assert "ARANGODB_DATABASE" in str(exc.value)

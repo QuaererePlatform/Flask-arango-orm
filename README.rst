@@ -119,3 +119,15 @@ connection with ``await``:
        db = await arango.connection()
        return "ok"
 
+Logging
+-------
+
+``flask_arango_orm`` uses the standard :mod:`logging` package. The
+``flask_arango_orm.arango`` module exposes a logger named after the module,
+which reports connection attempts, successful connections and when connections
+are torn down.  Enable it with::
+
+   import logging
+   logging.basicConfig(level=logging.INFO)
+
+

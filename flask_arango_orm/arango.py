@@ -1,13 +1,16 @@
 """Main module for flask_arango_orm"""
 
-__all__ = ["ArangoORM", "AsyncArangoORM"]
-
 from arango import ArangoClient
+import logging
+
 from arango_orm.connection_pool import ConnectionPool
 from flask import current_app, Flask
 from aioarango import ArangoClient as AsyncArangoClient
-
 from .config import ArangoSettings
+
+__all__ = ["ArangoORM", "AsyncArangoORM"]
+
+logger = logging.getLogger(__name__)
 
 ARANGODB_CLUSTER = False
 ARANGODB_HOST = ("http", "127.0.0.1", 8529)
@@ -79,11 +82,21 @@ class ArangoORM:
         username = settings.user
         password = settings.password
 
+        if not db_name:
+            raise ValueError("ARANGODB_DATABASE configuration not set")
+        if not username:
+            raise ValueError("ARANGODB_USER configuration not set")
+        if not password:
+            raise ValueError("ARANGODB_PASSWORD configuration not set")
+
+        logger.info("Attempting connection to ArangoDB")
+
         hosts = []
         if settings.cluster:
             host_pool = settings.host_pool
         else:
             host_pool = [settings.host]
+        logger.debug("Using host pool: %s", host_pool)
 
         for protocol, host, port in host_pool:
             hosts.append(
@@ -102,6 +115,7 @@ class ArangoORM:
             password=password,
             username=username,
         )
+        logger.info("Connected to database %s", db_name)
         return pool._db
 
     @property
@@ -123,6 +137,7 @@ class ArangoORM:
     def teardown(self, exception=None):
         conn = current_app.extensions.pop("arango", None)
         if conn is not None and hasattr(conn, "close"):
+            logger.info("Tearing down ArangoDB connection")
             conn.close()
 
 
@@ -154,15 +169,26 @@ class AsyncArangoORM:
         username = settings.user
         password = settings.password
 
+        if not db_name:
+            raise ValueError("ARANGODB_DATABASE configuration not set")
+        if not username:
+            raise ValueError("ARANGODB_USER configuration not set")
+        if not password:
+            raise ValueError("ARANGODB_PASSWORD configuration not set")
+
+        logger.info("Attempting connection to ArangoDB (async)")
+
         if settings.cluster:
             host_pool = settings.host_pool
         else:
             host_pool = [settings.host]
+        logger.debug("Using host pool: %s", host_pool)
 
         hosts = [f"{proto}://{host}:{port}" for proto, host, port in host_pool]
 
         client = AsyncArangoClient(hosts=hosts)
         db = await client.db(db_name, username, password)
+        logger.info("Connected to database %s", db_name)
         return client, db
 
     async def connection(self):
@@ -175,4 +201,5 @@ class AsyncArangoORM:
         conn = current_app.extensions.pop("arango_async", None)
         if conn is not None:
             client, _ = conn
+            logger.info("Tearing down ArangoDB connection (async)")
             await client.close()
