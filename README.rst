@@ -18,11 +18,11 @@ Using pip:
 
    pip install Flask-arango-orm
 
-Or using setup.py:
+Using Poetry:
 
 .. code-block:: shell
 
-   python setup.py install
+   poetry add Flask-arango-orm
 
 
 Tests can be ran using:
@@ -42,18 +42,56 @@ Documentation can be generated using:
 Usage
 -----
 
-This extension for the Flask framework uses arango-orm to provide an Object Model to use
-within the Flask application.
+The extension integrates `arango-orm` with your Flask application. A modern
+``create_app`` factory can load configuration from environment variables:
 
 .. code-block:: python
 
+   import os
+   from urllib.parse import urlparse
    from flask import Flask
    from flask_arango_orm import ArangoORM
 
-   app = Flask(__name__)
-   arango = ArangoORM(app)
+   def create_app() -> Flask:
+       app = Flask(__name__)
 
-   @app.route('/route')
-   def some_route():
-      db_conn = arango.connection
+       app.config['ARANGODB_DATABASE'] = os.getenv('ARANGODB_DATABASE', 'test')
+       app.config['ARANGODB_USER'] = os.getenv('ARANGODB_USER', 'root')
+       app.config['ARANGODB_PASSWORD'] = os.getenv('ARANGODB_PASSWORD', '')
+
+       host = urlparse(os.getenv('ARANGODB_HOST', 'http://127.0.0.1:8529'))
+       app.config['ARANGODB_HOST'] = (host.scheme, host.hostname, host.port)
+
+       arango = ArangoORM(app)
+
+       @app.route('/route')
+       def some_route():
+           db_conn = arango.connection
+           return 'ok'
+
+       return app
+
+Connecting to ArangoDB clusters
+-------------------------------
+
+To work with an ArangoDB cluster enable ``ARANGODB_CLUSTER`` and provide
+``ARANGODB_HOST_POOL`` with the coordinator URLs. The extension uses
+``python-arango``'s ``ArangoClient`` to create a connection pool.
+
+.. code-block:: python
+
+   def create_app() -> Flask:
+       app = Flask(__name__)
+
+       pool = [
+           ('http', 'coordinator1', 8529),
+           ('http', 'coordinator2', 8529),
+       ]
+       app.config.update(
+           ARANGODB_CLUSTER=True,
+           ARANGODB_HOST_POOL=pool,
+       )
+
+       ArangoORM(app)
+       return app
 

@@ -11,6 +11,7 @@ Welcome to Flask-arango-orm's documentation!
    :caption: Contents:
 
    configuration
+   clusters
    api
 
 
