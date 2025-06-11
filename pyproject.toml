@@ -28,12 +28,14 @@ classifiers = [
 python = ">=3.11,<4.0"
 arango-orm = {version = "^1.1.0", python = ">=3.11"}
 python-arango = "^7.9.1"
+aioarango = "^1.0.0"
 flask = ">=2.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=4.3.0"
 pytest-cov = "^4.1.0"
 pytest-flake8 = "^1.1.1"
+pytest-asyncio = "^1.0.0"
 six = "^1.16.0"
 black = "^23.3.0"
 ruff = "^0.4.4"

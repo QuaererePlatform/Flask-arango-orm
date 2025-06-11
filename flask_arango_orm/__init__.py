@@ -1,6 +1,6 @@
 from importlib.metadata import PackageNotFoundError, version
 
-from .arango import ArangoORM
+from .arango import ArangoORM, AsyncArangoORM
 from .config import ArangoSettings
 
 try:
@@ -10,6 +10,7 @@ except PackageNotFoundError:  # pragma: no cover - package not installed
 
 __all__ = (
     "ArangoORM",
+    "AsyncArangoORM",
     "ArangoSettings",
     "__version__",
 )

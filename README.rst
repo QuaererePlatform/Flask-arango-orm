@@ -100,3 +100,22 @@ pool.
        ArangoORM(app)
        return app
 
+Async usage
+-----------
+
+``AsyncArangoORM`` works the same way when writing async routes. Retrieve the
+connection with ``await``:
+
+.. code-block:: python
+
+   from flask import Flask
+   from flask_arango_orm import AsyncArangoORM
+
+   app = Flask(__name__)
+   arango = AsyncArangoORM(app)
+
+   @app.get("/async")
+   async def async_route():
+       db = await arango.connection()
+       return "ok"
+
