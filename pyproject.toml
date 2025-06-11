@@ -25,9 +25,10 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
-arango-orm = ">=0.7.2"
-python-arango = ">=7"
+python = ">=3.10,<4.0"
+arango-orm = {version = "^1.1.0", python = ">=3.11"}
+python-arango = "^7.9.1"
+six = "^1.16.0"
 flask = ">=2.0.0"
 
 [tool.poetry.group.dev.dependencies]
