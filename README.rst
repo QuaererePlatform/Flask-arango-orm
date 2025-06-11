@@ -29,14 +29,14 @@ Tests can be ran using:
 
 .. code-block:: shell
 
-   python setup.py test
+   poetry run pytest
 
 
 Documentation can be generated using:
 
 .. code-block:: shell
 
-   python setup.py build_sphinx
+   make -C docs html
 
 
 Usage
