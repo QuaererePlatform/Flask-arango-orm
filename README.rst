@@ -64,10 +64,11 @@ The extension integrates `arango-orm` with your Flask application. A modern
 
        arango = ArangoORM(app)
 
-       @app.route('/route')
-       def some_route():
-           db_conn = arango.connection
-           return 'ok'
+      @app.route('/route')
+      def some_route():
+          # ``db_conn`` is an ``arango_orm.database.Database`` instance
+          db_conn = arango.connection
+          return 'ok'
 
        return app
 
@@ -76,7 +77,9 @@ Connecting to ArangoDB clusters
 
 To work with an ArangoDB cluster enable ``ARANGODB_CLUSTER`` and provide
 ``ARANGODB_HOST_POOL`` with the coordinator URLs. The extension uses
-``python-arango``'s ``ArangoClient`` to create a connection pool.
+``python-arango``'s ``ArangoClient`` to create a connection pool.  The
+``connection`` property returns the next ``Database`` instance from this
+pool.
 
 .. code-block:: python
 

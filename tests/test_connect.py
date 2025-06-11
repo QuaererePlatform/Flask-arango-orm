@@ -27,11 +27,13 @@ def test_connect_single_host(mock_client_cls, mock_pool_cls, app):
     mock_client = mock.Mock()
     mock_client_cls.return_value = mock_client
     pool = mock_pool_cls.return_value
+    db_obj = mock.Mock(name='db')
+    pool._db = db_obj
 
     with app.app_context():
         conn = arango.connect()
 
-    assert conn is pool
+    assert conn is db_obj
     mock_client_cls.assert_called_once_with(hosts='http://localhost:8529')
     mock_pool_cls.assert_called_once_with(
         [mock_client], dbname='db', username='user', password='pass'
@@ -52,11 +54,13 @@ def test_connect_cluster(mock_client_cls, mock_pool_cls, app):
     client2 = mock.Mock(name='client2')
     mock_client_cls.side_effect = [client1, client2]
     pool = mock_pool_cls.return_value
+    db_obj = mock.Mock(name='db')
+    pool._db = db_obj
 
     with app.app_context():
         conn = arango.connect()
 
-    assert conn is pool
+    assert conn is db_obj
     mock_client_cls.assert_has_calls([
         mock.call(hosts='http://host1:8529'),
         mock.call(hosts='http://host2:8529'),
