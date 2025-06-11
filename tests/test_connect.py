@@ -22,25 +22,23 @@ def app():
     return app
 
 
-@mock.patch('flask_arango_orm.arango.Database')
+@mock.patch('flask_arango_orm.arango.ConnectionPool')
 @mock.patch('flask_arango_orm.arango.ArangoClient')
-def test_connect_single_host(mock_client_cls, mock_database_cls, app):
+def test_connect_single_host(mock_client_cls, mock_pool_cls, app):
     arango = ArangoORM(app)
 
     mock_client = mock.Mock()
-    mock_client.db.return_value = 'db_obj'
     mock_client_cls.return_value = mock_client
-    mock_db = mock_database_cls.return_value
+    pool = mock_pool_cls.return_value
 
     with app.app_context():
         conn = arango.connect()
 
-    assert conn is mock_db
+    assert conn is pool
     mock_client_cls.assert_called_once_with(hosts='http://localhost:8529')
-    mock_client.db.assert_called_once_with(
-        name='db', username='user', password='pass'
+    mock_pool_cls.assert_called_once_with(
+        [mock_client], dbname='db', username='user', password='pass'
     )
-    mock_database_cls.assert_called_once_with('db_obj')
 
 
 @mock.patch('flask_arango_orm.arango.ConnectionPool')
