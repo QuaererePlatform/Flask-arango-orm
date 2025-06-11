@@ -1,7 +1,13 @@
+from importlib.metadata import PackageNotFoundError, version
+
 from .arango import ArangoORM
-from .__version__ import __version__
+
+try:
+    __version__ = version("Flask-arango-orm")
+except PackageNotFoundError:  # pragma: no cover - package not installed
+    __version__ = "0.0.0"
 
 __all__ = (
-    'ArangoORM',
-    '__version__',
+    "ArangoORM",
+    "__version__",
 )
