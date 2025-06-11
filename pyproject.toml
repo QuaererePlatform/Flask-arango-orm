@@ -2,7 +2,7 @@
 name = "Flask-arango-orm"
 version = "0.2.0"
 description = "Flask connector for ArangoDB using arango-orm"
-documentation = "http://flask-arango-orm.readthedocs.io/"
+documentation = "https://flask-arango-orm.readthedocs.io/"
 repository = "https://github.com/QuaererePlatform/Flask-arango-orm"
 homepage = "https://github.com/QuaererePlatform/Flask-arango-orm"
 license = "LGPL-3.0-or-later"

@@ -7,7 +7,7 @@ and relational mode which can be taken advantage of using arango-orm.
 
 .. _ArangoDB: https://www.arangodb.com/
 .. _arango-orm: https://github.com/threatify/arango-orm
-.. _Flask: http://flask.pocoo.org/docs/1.0/
+.. _Flask: https://flask.palletsprojects.com/
 
 Installation
 ------------
