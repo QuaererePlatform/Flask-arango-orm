@@ -1,11 +1,12 @@
 Configuration Options
 =====================
 
-All configuration options are to be specified in the Flask app's config
+All configuration options are to be specified in the Flask app's config.
 
-They can also be loaded from environment variables when initializing the
-application. The :ref:`create_app` example in the README demonstrates
-using ``os.getenv`` to configure the extension.
+Configuration values can also be loaded from environment variables using the
+:class:`flask_arango_orm.config.ArangoSettings` helper.  The
+:ref:`create_app` example in the README demonstrates using
+``ArangoSettings.from_env`` to populate the extension's configuration.
 
 
 .. py:attribute:: ARANGODB_DATABASE

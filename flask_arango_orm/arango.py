@@ -5,6 +5,8 @@ from arango import ArangoClient
 from arango_orm.connection_pool import ConnectionPool
 from flask import current_app, Flask
 
+from .config import ArangoSettings
+
 ARANGODB_CLUSTER = False
 ARANGODB_HOST = ('http', '127.0.0.1', 8529)
 
@@ -22,6 +24,7 @@ class ArangoORM:
         :type app: flask.Flask
         """
         self.app = app
+        self.settings: ArangoSettings | None = None
         if app is not None:
             self.init_app(app)
 
@@ -48,6 +51,8 @@ class ArangoORM:
         self.app.extensions.setdefault('arango', None)
         self.app.teardown_appcontext(self.teardown)
 
+        self.settings = ArangoSettings.from_mapping(self.app.config)
+
     def connect(self):
         """Sets up the connection to the arangodb database
 
@@ -66,15 +71,17 @@ class ArangoORM:
         :returns: Database connection
         :rtype: arango_orm.database.Database
         """
-        db_name = current_app.config['ARANGODB_DATABASE']
-        username = current_app.config['ARANGODB_USER']
-        password = current_app.config['ARANGODB_PASSWORD']
+        settings = self.settings or ArangoSettings.from_mapping(current_app.config)
+
+        db_name = settings.database
+        username = settings.user
+        password = settings.password
 
         hosts = []
-        if current_app.config['ARANGODB_CLUSTER']:
-            host_pool = current_app.config['ARANGODB_HOST_POOL']
+        if settings.cluster:
+            host_pool = settings.host_pool
         else:
-            host_pool = [current_app.config['ARANGODB_HOST']]
+            host_pool = [settings.host]
 
         for protocol, host, port in host_pool:
             hosts.append(
