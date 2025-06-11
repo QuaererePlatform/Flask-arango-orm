@@ -63,8 +63,8 @@ class ArangoORM:
         If ARANGODB_CLUSTER is True, then the host configuration is
         taken from ARANGODB_HOST_POOL, otherwise ARANGODB_HOST is used.
 
-        :returns: Connection pool for ArangoDB
-        :rtype: arango_orm.connection_pool.ConnectionPool
+        :returns: Database connection
+        :rtype: arango_orm.database.Database
         """
         db_name = current_app.config['ARANGODB_DATABASE']
         username = current_app.config['ARANGODB_USER']
@@ -87,12 +87,13 @@ class ArangoORM:
                 )
             )
 
-        return ConnectionPool(
+        pool = ConnectionPool(
             hosts,
             dbname=db_name,
             password=password,
             username=username,
         )
+        return pool._db
 
     @property
     def connection(self):
@@ -103,8 +104,8 @@ class ArangoORM:
         connection does not currently exist, :py:func:`connect` is
         called.
 
-        :returns: Connection pool instance
-        :rtype: arango_orm.connection_pool.ConnectionPool
+        :returns: Database instance
+        :rtype: arango_orm.database.Database
         """
         if current_app.extensions.get('arango') is None:
             current_app.extensions['arango'] = self.connect()
