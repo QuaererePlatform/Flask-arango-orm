@@ -1,7 +1,4 @@
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 from flask_arango_orm import ArangoORM
 from flask_arango_orm.arango import ARANGODB_CLUSTER, ARANGODB_HOST
