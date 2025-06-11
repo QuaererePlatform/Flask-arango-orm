@@ -43,24 +43,26 @@ Usage
 -----
 
 The extension integrates `arango-orm` with your Flask application. A modern
-``create_app`` factory can load configuration from environment variables:
+``create_app`` factory can load configuration from environment variables using
+the :class:`~flask_arango_orm.config.ArangoSettings` helper:
 
 .. code-block:: python
 
-   import os
-   from urllib.parse import urlparse
    from flask import Flask
-   from flask_arango_orm import ArangoORM
+   from flask_arango_orm import ArangoORM, ArangoSettings
 
    def create_app() -> Flask:
        app = Flask(__name__)
 
-       app.config['ARANGODB_DATABASE'] = os.getenv('ARANGODB_DATABASE', 'test')
-       app.config['ARANGODB_USER'] = os.getenv('ARANGODB_USER', 'root')
-       app.config['ARANGODB_PASSWORD'] = os.getenv('ARANGODB_PASSWORD', '')
-
-       host = urlparse(os.getenv('ARANGODB_HOST', 'http://127.0.0.1:8529'))
-       app.config['ARANGODB_HOST'] = (host.scheme, host.hostname, host.port)
+       settings = ArangoSettings.from_env()
+       app.config.update(
+           ARANGODB_DATABASE=settings.database,
+           ARANGODB_USER=settings.user,
+           ARANGODB_PASSWORD=settings.password,
+           ARANGODB_HOST=settings.host,
+           ARANGODB_CLUSTER=settings.cluster,
+           ARANGODB_HOST_POOL=settings.host_pool,
+       )
 
        arango = ArangoORM(app)
 
