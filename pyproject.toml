@@ -41,6 +41,15 @@ black = "^23.3.0"
 ruff = "^0.4.4"
 pre-commit = "^3.7.0"
 
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["flask_arango_orm", "tests"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
