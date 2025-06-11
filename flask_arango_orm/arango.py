@@ -2,7 +2,6 @@
 __all__ = ['ArangoORM']
 
 from arango import ArangoClient
-from arango_orm import Database
 from arango_orm.connection_pool import ConnectionPool
 from flask import current_app, Flask
 
