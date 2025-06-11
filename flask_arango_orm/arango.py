@@ -43,6 +43,10 @@ class ArangoORM:
             self.app = app
         self.app.config.setdefault('ARANGODB_CLUSTER', ARANGODB_CLUSTER)
         self.app.config.setdefault('ARANGODB_HOST', ARANGODB_HOST)
+        if not hasattr(self.app, 'extensions'):
+            self.app.extensions = {}
+        self.app.extensions.setdefault('arango', None)
+        self.app.teardown_appcontext(self.teardown)
 
     def connect(self):
         """Sets up the connection to the arangodb database
@@ -62,40 +66,39 @@ class ArangoORM:
         :returns: Connection to arangodb
         :rtype: arango_orm.Database
         """
-        with current_app.app_context():
-            db_name = current_app.config['ARANGODB_DATABASE']
-            username = current_app.config['ARANGODB_USER']
-            password = current_app.config['ARANGODB_PASSWORD']
+        db_name = current_app.config['ARANGODB_DATABASE']
+        username = current_app.config['ARANGODB_USER']
+        password = current_app.config['ARANGODB_PASSWORD']
 
-            if current_app.config['ARANGODB_CLUSTER']:
-                hosts = []
-                host_pool = current_app.config['ARANGODB_HOST_POOL']
-                for protocol, host, port in host_pool:
-                    hosts.append(
-                        ArangoClient(
-                            hosts="{protocol}://{host}:{port}".format(
-                                protocol=protocol,
-                                host=host,
-                                port=port
-                            )
+        if current_app.config['ARANGODB_CLUSTER']:
+            hosts = []
+            host_pool = current_app.config['ARANGODB_HOST_POOL']
+            for protocol, host, port in host_pool:
+                hosts.append(
+                    ArangoClient(
+                        hosts="{protocol}://{host}:{port}".format(
+                            protocol=protocol,
+                            host=host,
+                            port=port
                         )
                     )
-                return ConnectionPool(hosts,
-                                      dbname=db_name,
-                                      password=password,
-                                      username=username)
-            else:
-                protocol, host, port = current_app.config['ARANGODB_HOST']
-                client = ArangoClient(
-                    hosts="{protocol}://{host}:{port}".format(
-                        protocol=protocol,
-                        host=host,
-                        port=port
-                    )
                 )
-                return Database(client.db(name=db_name,
-                                          username=username,
-                                          password=password))
+            return ConnectionPool(hosts,
+                                  dbname=db_name,
+                                  password=password,
+                                  username=username)
+        else:
+            protocol, host, port = current_app.config['ARANGODB_HOST']
+            client = ArangoClient(
+                hosts="{protocol}://{host}:{port}".format(
+                    protocol=protocol,
+                    host=host,
+                    port=port
+                )
+            )
+            return Database(client.db(name=db_name,
+                                      username=username,
+                                      password=password))
 
     @property
     def connection(self):
@@ -109,7 +112,11 @@ class ArangoORM:
         :returns: ArangoDB.connection
         :rtype: arango_orm.Database
         """
-        with current_app.app_context():
-            if not hasattr(current_app, 'arangodb'):
-                setattr(current_app, 'arangodb', self.connect())
-            return current_app.arangodb
+        if current_app.extensions.get('arango') is None:
+            current_app.extensions['arango'] = self.connect()
+        return current_app.extensions['arango']
+
+    def teardown(self, exception=None):
+        conn = current_app.extensions.pop('arango', None)
+        if conn is not None and hasattr(conn, 'close'):
+            conn.close()
